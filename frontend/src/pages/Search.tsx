@@ -21,8 +21,7 @@ function renderSnippet(text: string | null | undefined): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
   return escaped
-    .replace(/&lt;mark&gt;/g, '<mark>')
-    .replace(/&lt;\/mark&gt;/g, '</mark>')
+    .replace(/&lt;(\/?)(mark|em|b|strong)&gt;/g, '<$1$2>')
 }
 
 const Search: React.FC = () => {
@@ -182,9 +181,18 @@ const Search: React.FC = () => {
                     ))}
                   </Space>
                   {item.snippet && (
-                    <Typography.Paragraph
-                      style={{ margin: 0 }}
-                      ellipsis={{ rows: 3, expandable: true, symbol: '展开' }}
+                    <div
+                      className="search-snippet"
+                      style={{
+                        margin: 0,
+                        color: 'rgba(0, 0, 0, 0.65)',
+                        fontSize: 14,
+                        lineHeight: 1.5715,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
                       dangerouslySetInnerHTML={{ __html: renderSnippet(item.snippet) }}
                     />
                   )}

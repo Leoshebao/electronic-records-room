@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Spin } from 'antd'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { AppLayout } from './layout/AppLayout'
+import { AppErrorBoundary } from './components/AppErrorBoundary'
 import Login from './pages/Login'
 import ChangePassword from './pages/ChangePassword'
 
@@ -44,6 +45,7 @@ export default function App() {
   return (
     <AuthProvider>
       <Suspense fallback={<PageFallback />}>
+        <AppErrorBoundary>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
@@ -123,6 +125,7 @@ export default function App() {
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </AppErrorBoundary>
       </Suspense>
     </AuthProvider>
   )

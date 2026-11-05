@@ -18,6 +18,7 @@ import {
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { APP_NAME, http, normalizeError } from '../api/client'
+import { AppErrorBoundary } from '../components/AppErrorBoundary'
 
 const { Header, Sider, Content } = Layout
 
@@ -152,7 +153,9 @@ export const AppLayout: React.FC = () => {
           </Dropdown>
         </Header>
         <Content className="app-content">
-          <Outlet />
+          <AppErrorBoundary key={location.pathname}>
+            <Outlet />
+          </AppErrorBoundary>
         </Content>
       </Layout>
 
