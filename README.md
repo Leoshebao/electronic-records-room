@@ -1,11 +1,35 @@
 # 电子资料室系统 · Electronic Records Room
 
+[![CI](https://github.com/Leoshebao/electronic-records-room/actions/workflows/ci.yml/badge.svg)](https://github.com/Leoshebao/electronic-records-room/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB.svg)](https://www.python.org/)
+[![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1.svg)](https://www.postgresql.org/)
+[![React 18](https://img.shields.io/badge/React-18-61DAFB.svg)](https://react.dev/)
+
 > 面向企业内部局域网的离线档案管理系统：四级密级管控、全文检索、借阅审批、版本管理、水印导出与审计追溯。
 > An offline-first electronic records management system for corporate LANs: 4-level secrecy control, full-text search, borrowing workflow, versioning, watermark export and audit trail.
 
 纯内网部署 · 免安装便携运行 · 全中文界面 · 10–30 人规模
 
 ---
+
+## 界面预览 / Screenshots
+
+![界面演示](docs/screenshots/demo.gif)
+
+| 概览（仪表盘） | 资料库列表 |
+|:---:|:---:|
+| ![概览](docs/screenshots/01-dashboard.png) | ![资料库](docs/screenshots/02-documents.png) |
+
+| 档案详情与元数据 | 审计日志 |
+|:---:|:---:|
+| ![档案详情](docs/screenshots/04-detail.png) | ![审计日志](docs/screenshots/06-audit.png) |
+
+| 借阅管理 | 系统自检 |
+|:---:|:---:|
+| ![借阅管理](docs/screenshots/05-borrow.png) | ![系统自检](docs/screenshots/08-system-check.png) |
+
+> 截图为便携版本地实例的真实界面（演示数据，非真实档案）。
 
 ## 功能特性
 
@@ -158,6 +182,13 @@ python scripts/verify_api_contract.py     # 前端调用 × 后端路由，未�
 python scripts/verify_frontend_api.py     # 端到端接口连通
 cd ../frontend && npm run build           # tsc --noEmit 必须 0 错误
 ```
+
+CI 在每次 push / PR 到 `main` 时自动执行（[`.github/workflows/ci.yml`](.github/workflows/ci.yml)）：
+
+| Job | 步骤 |
+|-----|------|
+| Backend | 安装依赖 → `compileall` 语法检查 → `verify_api_contract.py` 契约校验 |
+| Frontend | `npm ci` → `npm run typecheck`（`tsc --noEmit`）→ `npm run build` |
 
 ## 已知限制
 
