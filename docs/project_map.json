@@ -1,0 +1,917 @@
+{
+  "meta": {
+    "name": "电子资料室系统 / Electronic Records Room",
+    "version": "1.0.0",
+    "type": "portable-offline",
+    "root": ".（仓库根目录）",
+    "entry": "http://127.0.0.1:8080",
+    "os": "Windows 10/11 x64",
+    "scale": "LAN 10-30 users, air-gapped",
+    "archive_doc": "docs/architecture.md"
+  },
+  "stack": {
+    "backend": "Python 3.11 + FastAPI 0.115.6 + SQLAlchemy 2.0.36 + Alembic 1.20.1",
+    "db": "PostgreSQL 16.2 (port 4854, 127.0.0.1 only)",
+    "frontend": "React 18.3.1 + TS 5.7.2 + Vite 6.0.7 + AntD 5.22.5",
+    "auth": "JWT (PyJWT 2.9.0) + bcrypt",
+    "ocr": "PaddleOCR design / NOT installed in runtime",
+    "web": "Nginx+self-signed TLS (prod) / preview_server.py (portable)"
+  },
+  "ports": {
+    "postgres": 4854,
+    "api": 8000,
+    "web": 8080
+  },
+  "roles": [
+    "sysadmin",
+    "records_manager",
+    "viewer"
+  ],
+  "secrecy_levels": [
+    "public",
+    "internal",
+    "secret",
+    "confidential"
+  ],
+  "role_max_level": {
+    "sysadmin": "confidential",
+    "records_manager": "secret",
+    "viewer": "internal"
+  },
+  "role_permissions": {
+    "sysadmin": "all 14",
+    "records_manager": "13 (no user:manage, no system:config, no backup:manage)",
+    "viewer": [
+      "doc:view",
+      "borrow:apply"
+    ]
+  },
+  "tables": {
+    "alembic_version": {
+      "fields": [
+        "version_num"
+      ],
+      "count": 1
+    },
+    "audit_logs": {
+      "fields": [
+        "id",
+        "user_id",
+        "username",
+        "action",
+        "target_type",
+        "target_id",
+        "detail",
+        "ip_address",
+        "user_agent",
+        "result",
+        "created_at"
+      ],
+      "count": 11
+    },
+    "backup_records": {
+      "fields": [
+        "id",
+        "filename",
+        "file_path",
+        "backup_type",
+        "size_bytes",
+        "status",
+        "error_msg",
+        "started_at",
+        "finished_at",
+        "created_by",
+        "created_at",
+        "updated_at"
+      ],
+      "count": 12
+    },
+    "borrow_requests": {
+      "fields": [
+        "id",
+        "request_no",
+        "document_id",
+        "applicant_id",
+        "reason",
+        "requested_days",
+        "want_download",
+        "want_print",
+        "status",
+        "approver_id",
+        "approved_at",
+        "reject_reason",
+        "start_at",
+        "due_at",
+        "returned_at",
+        "renew_count",
+        "created_at",
+        "updated_at"
+      ],
+      "count": 18
+    },
+    "categories": {
+      "fields": [
+        "id",
+        "room_id",
+        "parent_id",
+        "name",
+        "code",
+        "path",
+        "level",
+        "sort_order",
+        "is_active",
+        "remark",
+        "created_at",
+        "updated_at",
+        "is_deleted",
+        "deleted_at",
+        "deleted_by"
+      ],
+      "count": 15
+    },
+    "departments": {
+      "fields": [
+        "id",
+        "name",
+        "code",
+        "parent_id",
+        "sort_order",
+        "is_active",
+        "remark",
+        "created_at",
+        "updated_at",
+        "is_deleted",
+        "deleted_at",
+        "deleted_by"
+      ],
+      "count": 12
+    },
+    "document_permissions": {
+      "fields": [
+        "id",
+        "document_id",
+        "subject_type",
+        "subject_id",
+        "can_view",
+        "can_download",
+        "can_print",
+        "granted_by",
+        "expires_at",
+        "created_at",
+        "updated_at"
+      ],
+      "count": 11
+    },
+    "document_tags": {
+      "fields": [
+        "document_id",
+        "tag_id"
+      ],
+      "count": 2
+    },
+    "document_versions": {
+      "fields": [
+        "id",
+        "document_id",
+        "version_no",
+        "version_label",
+        "change_note",
+        "is_current",
+        "created_by",
+        "created_at",
+        "updated_at"
+      ],
+      "count": 9
+    },
+    "documents": {
+      "fields": [
+        "id",
+        "doc_no",
+        "title",
+        "room_id",
+        "category_id",
+        "secrecy_level",
+        "status",
+        "summary",
+        "keywords",
+        "responsible_dept_id",
+        "created_by",
+        "updated_by",
+        "current_version_id",
+        "file_count",
+        "total_size",
+        "page_count",
+        "view_count",
+        "download_count",
+        "search_text",
+        "search_grams",
+        "archive_year",
+        "retention_years",
+        "published_at",
+        "archived_at",
+        "created_at",
+        "updated_at",
+        "is_deleted",
+        "deleted_at",
+        "deleted_by"
+      ],
+      "count": 29
+    },
+    "files": {
+      "fields": [
+        "id",
+        "document_id",
+        "version_id",
+        "original_name",
+        "stored_name",
+        "rel_path",
+        "ext",
+        "mime_type",
+        "size_bytes",
+        "sha256",
+        "page_count",
+        "status",
+        "ocr_status",
+        "ocr_text",
+        "created_by",
+        "created_at",
+        "updated_at"
+      ],
+      "count": 17
+    },
+    "ocr_tasks": {
+      "fields": [
+        "id",
+        "file_id",
+        "status",
+        "engine",
+        "retry_count",
+        "error_msg",
+        "started_at",
+        "finished_at",
+        "duration_ms",
+        "created_at",
+        "updated_at"
+      ],
+      "count": 11
+    },
+    "rooms": {
+      "fields": [
+        "id",
+        "name",
+        "code",
+        "description",
+        "location",
+        "keeper_id",
+        "sort_order",
+        "is_active",
+        "created_at",
+        "updated_at",
+        "is_deleted",
+        "deleted_at",
+        "deleted_by"
+      ],
+      "count": 13
+    },
+    "system_configs": {
+      "fields": [
+        "key",
+        "value",
+        "value_type",
+        "description",
+        "is_editable",
+        "updated_by",
+        "created_at",
+        "updated_at"
+      ],
+      "count": 8
+    },
+    "tags": {
+      "fields": [
+        "id",
+        "name",
+        "color",
+        "created_by",
+        "created_at",
+        "updated_at"
+      ],
+      "count": 6
+    },
+    "users": {
+      "fields": [
+        "id",
+        "username",
+        "full_name",
+        "password_hash",
+        "role",
+        "department_id",
+        "email",
+        "phone",
+        "is_active",
+        "must_change_password",
+        "last_login_at",
+        "last_login_ip",
+        "failed_login_count",
+        "locked_until",
+        "token_version",
+        "remark",
+        "created_at",
+        "updated_at",
+        "is_deleted",
+        "deleted_at",
+        "deleted_by"
+      ],
+      "count": 21
+    }
+  },
+  "api_count": 69,
+  "api": [
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "perm": "login",
+      "handler": "login",
+      "module": "auth",
+      "summary": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "perm": "login",
+      "handler": "logout",
+      "module": "auth",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "perm": "login",
+      "handler": "me",
+      "module": "auth",
+      "summary": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/change-password",
+      "perm": "login",
+      "handler": "change_password",
+      "module": "auth",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/permission-matrix",
+      "perm": "login",
+      "handler": "permission_matrix",
+      "module": "auth",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/backups",
+      "perm": "backup:manage",
+      "handler": "list_backups",
+      "module": "backup",
+      "summary": "备份记录列表"
+    },
+    {
+      "method": "POST",
+      "path": "/api/backups",
+      "perm": "backup:manage",
+      "handler": "create_backup",
+      "module": "backup",
+      "summary": "立即备份"
+    },
+    {
+      "method": "GET",
+      "path": "/api/backups/{backup_id}/download",
+      "perm": "backup:manage",
+      "handler": "download_backup",
+      "module": "backup",
+      "summary": "下载备份包"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/backups/cleanup",
+      "perm": "backup:manage",
+      "handler": "cleanup",
+      "module": "backup",
+      "summary": "清理过期备份"
+    },
+    {
+      "method": "POST",
+      "path": "/api/borrow/requests",
+      "perm": "borrow:apply",
+      "handler": "apply_borrow",
+      "module": "borrow",
+      "summary": "提交借阅申请"
+    },
+    {
+      "method": "GET",
+      "path": "/api/borrow/requests",
+      "perm": "borrow:apply",
+      "handler": "list_borrow_requests",
+      "module": "borrow",
+      "summary": "借阅申请列表"
+    },
+    {
+      "method": "GET",
+      "path": "/api/borrow/pending",
+      "perm": "borrow:approve",
+      "handler": "pending_requests",
+      "module": "borrow",
+      "summary": "待审批列表（管理员）"
+    },
+    {
+      "method": "GET",
+      "path": "/api/borrow/mine",
+      "perm": "borrow:apply",
+      "handler": "my_borrows",
+      "module": "borrow",
+      "summary": "我的借阅（借阅中优先）"
+    },
+    {
+      "method": "GET",
+      "path": "/api/borrow/requests/{request_id}",
+      "perm": "borrow:apply",
+      "handler": "get_borrow_request",
+      "module": "borrow",
+      "summary": "借阅详情"
+    },
+    {
+      "method": "POST",
+      "path": "/api/borrow/requests/{request_id}/approve",
+      "perm": "borrow:approve",
+      "handler": "approve_borrow",
+      "module": "borrow",
+      "summary": "审批通过"
+    },
+    {
+      "method": "POST",
+      "path": "/api/borrow/requests/{request_id}/reject",
+      "perm": "borrow:approve",
+      "handler": "reject_borrow",
+      "module": "borrow",
+      "summary": "审批驳回"
+    },
+    {
+      "method": "POST",
+      "path": "/api/borrow/requests/{request_id}/cancel",
+      "perm": "borrow:apply",
+      "handler": "cancel_borrow",
+      "module": "borrow",
+      "summary": "撤回申请"
+    },
+    {
+      "method": "POST",
+      "path": "/api/borrow/requests/{request_id}/return",
+      "perm": "borrow:apply",
+      "handler": "return_borrow",
+      "module": "borrow",
+      "summary": "归还"
+    },
+    {
+      "method": "POST",
+      "path": "/api/borrow/requests/{request_id}/renew",
+      "perm": "borrow:apply",
+      "handler": "renew_borrow",
+      "module": "borrow",
+      "summary": "续借"
+    },
+    {
+      "method": "POST",
+      "path": "/api/borrow/sweep",
+      "perm": "borrow:approve",
+      "handler": "sweep_now",
+      "module": "borrow",
+      "summary": "手动触发到期回收（管理员）"
+    },
+    {
+      "method": "GET",
+      "path": "/api/borrow/sweeper",
+      "perm": "borrow:approve",
+      "handler": "sweeper_status",
+      "module": "borrow",
+      "summary": "到期回收线程状态"
+    },
+    {
+      "method": "GET",
+      "path": "/api/borrow/levels",
+      "perm": "borrow:apply",
+      "handler": "borrow_levels",
+      "module": "borrow",
+      "summary": "当前用户可借阅的密级范围"
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/upload",
+      "perm": "doc:upload",
+      "handler": "upload_document",
+      "module": "documents",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents",
+      "perm": "doc:view",
+      "handler": "list_documents",
+      "module": "documents",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/{doc_id}",
+      "perm": "doc:view",
+      "handler": "read_document",
+      "module": "documents",
+      "summary": ""
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/documents/{doc_id}",
+      "perm": "doc:edit",
+      "handler": "update_document",
+      "module": "documents",
+      "summary": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/{doc_id}/versions",
+      "perm": "doc:edit",
+      "handler": "add_version",
+      "module": "documents",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/{doc_id}/versions",
+      "perm": "doc:view",
+      "handler": "list_versions",
+      "module": "documents",
+      "summary": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/documents/{doc_id}/versions/{version_id}/rollback",
+      "perm": "doc:edit",
+      "handler": "rollback_version",
+      "module": "documents",
+      "summary": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/documents/{doc_id}",
+      "perm": "doc:delete",
+      "handler": "delete_document",
+      "module": "documents",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/{doc_id}/files",
+      "perm": "login",
+      "handler": "list_files",
+      "module": "documents",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/documents/storage/usage",
+      "perm": "system:config",
+      "handler": "storage_usage",
+      "module": "documents",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/files/{file_id}/download",
+      "perm": "login",
+      "handler": "download_file",
+      "module": "files",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/files/{file_id}/preview",
+      "perm": "login",
+      "handler": "preview_file",
+      "module": "files",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/files/{file_id}/thumb",
+      "perm": "login",
+      "handler": "thumbnail",
+      "module": "files",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "perm": "login",
+      "handler": "health",
+      "module": "health",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/db",
+      "perm": "login",
+      "handler": "health_db",
+      "module": "health",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/storage",
+      "perm": "login",
+      "handler": "health_storage",
+      "module": "health",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/ocr/engine",
+      "perm": "doc:upload",
+      "handler": "engine_status",
+      "module": "ocr",
+      "summary": "OCR 引擎自检"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ocr/stats",
+      "perm": "doc:upload",
+      "handler": "stats",
+      "module": "ocr",
+      "summary": "任务状态统计"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ocr/tasks",
+      "perm": "doc:upload",
+      "handler": "list_tasks",
+      "module": "ocr",
+      "summary": "任务列表"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ocr/documents/{doc_id}/reocr",
+      "perm": "doc:edit",
+      "handler": "reocr_document",
+      "module": "ocr",
+      "summary": "整份资料重新解析"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ocr/files/{file_id}/retry",
+      "perm": "doc:edit",
+      "handler": "retry_file",
+      "module": "ocr",
+      "summary": "单个文件重试"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ocr/drain",
+      "perm": "doc:upload",
+      "handler": "drain_queue",
+      "module": "ocr",
+      "summary": "立即跑空队列"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ocr/worker/start",
+      "perm": "system:config",
+      "handler": "start_worker",
+      "module": "ocr",
+      "summary": "启动后台解析线程"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ocr/worker/stop",
+      "perm": "system:config",
+      "handler": "stop_worker",
+      "module": "ocr",
+      "summary": "停止后台解析线程"
+    },
+    {
+      "method": "GET",
+      "path": "/api/rooms",
+      "perm": "login",
+      "handler": "list_rooms",
+      "module": "rooms",
+      "summary": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/rooms",
+      "perm": "room:manage",
+      "handler": "create_room",
+      "module": "rooms",
+      "summary": ""
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/rooms/{room_id}",
+      "perm": "room:manage",
+      "handler": "update_room",
+      "module": "rooms",
+      "summary": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/rooms/{room_id}",
+      "perm": "room:manage",
+      "handler": "delete_room",
+      "module": "rooms",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/rooms/{room_id}/categories",
+      "perm": "login",
+      "handler": "room_category_tree",
+      "module": "rooms",
+      "summary": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/categories",
+      "perm": "room:manage",
+      "handler": "create_category",
+      "module": "rooms",
+      "summary": ""
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/categories/{category_id}",
+      "perm": "room:manage",
+      "handler": "update_category",
+      "module": "rooms",
+      "summary": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/categories/{category_id}",
+      "perm": "room:manage",
+      "handler": "delete_category",
+      "module": "rooms",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/categories/tree",
+      "perm": "login",
+      "handler": "all_category_tree",
+      "module": "rooms",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/search",
+      "perm": "doc:view",
+      "handler": "search",
+      "module": "search",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/search/suggest",
+      "perm": "doc:view",
+      "handler": "suggest",
+      "module": "search",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/search/stats",
+      "perm": "audit:view",
+      "handler": "stats",
+      "module": "search",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/audit/logs",
+      "perm": "audit:view",
+      "handler": "list_audit_logs",
+      "module": "stats",
+      "summary": "审计日志分页查询"
+    },
+    {
+      "method": "GET",
+      "path": "/api/audit/actions",
+      "perm": "audit:view",
+      "handler": "audit_actions",
+      "module": "stats",
+      "summary": "动作字典及各动作条数"
+    },
+    {
+      "method": "GET",
+      "path": "/api/audit/summary",
+      "perm": "audit:view",
+      "handler": "audit_summary",
+      "module": "stats",
+      "summary": "审计概览"
+    },
+    {
+      "method": "GET",
+      "path": "/api/stats/overview",
+      "perm": "doc:view",
+      "handler": "stats_overview",
+      "module": "stats",
+      "summary": "系统统计概览"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users",
+      "perm": "user:manage",
+      "handler": "list_users",
+      "module": "users",
+      "summary": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/users",
+      "perm": "user:manage",
+      "handler": "create_user",
+      "module": "users",
+      "summary": ""
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/users/{user_id}",
+      "perm": "user:manage",
+      "handler": "update_user",
+      "module": "users",
+      "summary": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/users/{user_id}/reset-password",
+      "perm": "user:manage",
+      "handler": "reset_password",
+      "module": "users",
+      "summary": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/users/{user_id}",
+      "perm": "user:manage",
+      "handler": "disable_user",
+      "module": "users",
+      "summary": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/departments",
+      "perm": "doc:view",
+      "handler": "list_departments",
+      "module": "users",
+      "summary": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/departments",
+      "perm": "user:manage",
+      "handler": "create_department",
+      "module": "users",
+      "summary": ""
+    }
+  ],
+  "frontend_pages": [
+    "Login",
+    "ChangePassword",
+    "Dashboard",
+    "Documents",
+    "Search",
+    "Borrow",
+    "Rooms",
+    "Users",
+    "Audit",
+    "Backups",
+    "SystemCheck"
+  ],
+  "directories": {
+    "backend": "backend/app/{core,db,models,schemas,api/routes,services}",
+    "migrations": "backend/alembic/versions (0001~0005)",
+    "scripts": "backend/scripts (seed/reset/verify/preview)",
+    "frontend": "frontend/src/{pages,api,auth,layout}",
+    "runtime": "runtime/python, runtime/pg",
+    "data": "data/erecords_data.sql"
+  },
+  "known_limitations": [
+    "OCR engine (paddleocr) not installed -> scanned files skipped",
+    "portable edition serves plain HTTP on 127.0.0.1 (no TLS)",
+    "requirements.txt versions differ from runtime actual versions",
+    "category tree API has dual response shape (array vs grouped object)",
+    "no React ErrorBoundary; component crash = blank page",
+    "demo SECRET_KEY and default admin password must be changed before production"
+  ],
+  "verify": [
+    "backend/scripts/run_all_verify.py",
+    "backend/scripts/verify_api_contract.py",
+    "backend/scripts/verify_frontend_api.py",
+    "frontend npm run build (tsc --noEmit must pass)"
+  ]
+}

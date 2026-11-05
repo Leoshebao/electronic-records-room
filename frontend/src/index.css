@@ -1,0 +1,140 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Microsoft YaHei', 'PingFang SC',
+    'Hiragino Sans GB', 'Segoe UI', Roboto, sans-serif;
+  background: #f5f7fa;
+  color: #1f2328;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ---------- 布局 ---------- */
+.app-logo {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.app-header {
+  height: 56px;
+  line-height: 56px;
+  padding: 0 16px;
+  background: #fff;
+  border-bottom: 1px solid #e8ebf0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-content {
+  padding: 16px;
+  overflow: auto;
+}
+
+/* ---------- 表格选中行 ---------- */
+.row-selected > td {
+  background: #e8f1ff !important;
+}
+
+/* ---------- 类目树操作按钮 ---------- */
+.tree-actions {
+  opacity: 0;
+  transition: opacity 0.15s;
+  margin-left: 4px;
+}
+
+.ant-tree-treenode:hover .tree-actions {
+  opacity: 1;
+}
+
+/* ---------- 登录页 ---------- */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #0f2f5c 0%, #1f5aa6 55%, #2f7ad1 100%);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  border-radius: 8px;
+}
+
+.login-title {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.login-footer {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  margin-top: 16px;
+}
+
+/* ---------- 概览趋势柱 ---------- */
+.trend-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 150px;
+  padding-top: 8px;
+}
+
+.trend-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  min-width: 0;
+}
+
+.trend-bar {
+  width: 100%;
+  max-width: 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.trend-seg.created {
+  background: #1f5aa6;
+}
+
+.trend-seg.downloads {
+  background: #7fb0e8;
+}
+
+.trend-label {
+  font-size: 11px;
+  color: #8a9099;
+  margin-top: 4px;
+  white-space: nowrap;
+  transform: scale(0.92);
+}

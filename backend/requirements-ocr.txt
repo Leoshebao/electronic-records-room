@@ -1,0 +1,15 @@
+# ===== 电子资料室系统 OCR 附加依赖（P6 扫描件识别）=====
+# 基础 requirements.txt 装完后，再执行本文件：
+#   backend\.venv\Scripts\pip.exe install -r backend\requirements-ocr.txt
+#
+# 说明：
+# 1) CPU 版，无需 CUDA；总下载量约 400~600MB，首次识别时会自动下载中文模型（约 20MB）并缓存到 ~/.paddleocr。
+# 2) 仅支持 Python 3.11（paddlepaddle 官方 wheel 覆盖 3.8~3.12）。
+# 3) 若内网完全离线，请在能联网的机器上执行：
+#      pip download -r requirements-ocr.txt -d offline_wheels
+#    把 offline_wheels 拷到服务器后：
+#      pip install --no-index --find-links offline_wheels -r requirements-ocr.txt
+# 4) 未安装时系统仍可启动：文本层 PDF/Word/Excel 正常解析，扫描件解析结果为 skipped 并在文档详情中提示。
+
+paddlepaddle>=2.6,<3.0
+paddleocr>=2.7,<3.0

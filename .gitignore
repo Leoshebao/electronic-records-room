@@ -1,0 +1,45 @@
+# ---- 敏感配置 / Secrets ----
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# 自签证书私钥（只保留生成脚本）
+deploy/certs/*.key
+deploy/certs/*.pfx
+deploy/certs/*.crt
+
+# ---- 运行时数据 / Runtime data ----
+runtime/
+pgdata/
+storage/
+backups/
+logs/
+temp/
+data/*.sql
+*.pid
+
+# ---- 构建产物 / Build output ----
+frontend/dist/
+frontend/node_modules/
+node_modules/
+*.tsbuildinfo
+*.pyc
+__pycache__/
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# ---- 打包产物 ----
+*.zip
+*.7z
+*.tar.gz
+
+# ---- 编辑器 / OS ----
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini

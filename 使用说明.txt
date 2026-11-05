@@ -1,0 +1,74 @@
+电子资料室系统  便携版（Windows 10/11 x64）
+=================================================
+
+一、这是什么
+  电子资料室系统的免安装绿色版。整个目录复制到任意 Windows 10/11 64 位电脑，
+  双击 start.bat 即可运行。目标电脑无需安装 Python、PostgreSQL、Node.js、Nginx，
+  也无需联网。
+
+二、快速开始
+  1) 解压整个目录到本机，建议使用短路径，例如 D:\ERecords
+     （不要放在含空格、特殊符号或层级过深的目录）
+  2) 双击 start.bat
+     首次启动会自动初始化数据库并导入初始业务数据，约需 1-2 分钟，请勿中途关闭窗口
+  3) 启动完成后浏览器自动打开 http://127.0.0.1:8080
+  4) 登录：管理员 admin  口令 Admin@12345#V（登录后请在"用户管理"中修改口令）
+  5) 结束使用：双击 stop.bat（依次关闭页面服务、后端服务、数据库）
+  6) 查看运行状态：双击 status.bat
+
+  注意：请直接双击运行，不要"以管理员身份运行"。数据库出于安全设计，
+  拒绝在管理员权限下运行（启动器已规避该限制，但普通权限运行最稳定）。
+
+三、文件说明
+  start.bat         一键启动（数据库 -> 后端 -> 页面 -> 打开浏览器）
+  stop.bat          一键停止全部服务
+  status.bat        查看三个服务是否在运行
+  launcher.py       启动器（start.bat / stop.bat 实际调用它，可命令行使用：
+                    runtime\python\python.exe launcher.py start|stop|status）
+  .env              系统配置：端口、上传大小、OCR、公网地址等
+  backend\          后端程序（FastAPI）与运维脚本
+  frontend\dist\    已编译的前端页面；frontend\src 为前端源码（仅供二次开发）
+  storage\          上传的原始文件（重要，需备份）
+  backups\          系统内"备份管理"的输出目录
+  data\             首次初始化时导入的初始数据（erecords_data.sql）
+  runtime\python\   内嵌 Python 3.11 运行时与全部第三方依赖
+  runtime\pg\       PostgreSQL 便携版（bin/lib/share）
+  pgdata\           数据库数据目录（首次启动自动生成，重要，需备份）
+  logs\             运行日志：api.log / web.log / postgres.log / initdb.log
+  deploy\           服务器正式部署用的 Nginx / Docker 配置（本机运行用不到）
+
+四、端口与访问
+  默认：页面 8080、后端 8000、数据库 4854，均只监听 127.0.0.1（仅本机可访问）。
+  改端口：编辑 .env 中的 PORTABLE_WEB_PORT / API_PORT / POSTGRES_PORT 后
+  重新运行 start.bat 即可（数据库初始化完成后修改端口无需重建数据）。
+  端口被占用时可用 status.bat 与 netstat -ano | findstr :8080 排查。
+
+  局域网访问（可选，仅限可信内网）：
+   1) .env 中把 API_HOST 改为 0.0.0.0
+   2) 防火墙放行 8080 端口
+   3) 其他电脑访问 http://本机IP:8080
+   注意 HTTP 为明文传输；如需 HTTPS，可用 deploy\certs 证书配合 Nginx 部署。
+
+五、数据与备份
+  - 业务数据在 pgdata（PostgreSQL），原始文件在 storage，两者构成完整业务数据。
+  - 完整备份：先运行 stop.bat，再整目录复制一份即可。
+  - 迁移到新电脑：复制整个目录（含 pgdata 与 storage）到新机器，直接 start.bat，
+    无需重新初始化，数据保持一致。
+  - 只迁移程序、不要旧数据：删除 pgdata 目录后启动，会重新初始化并导入初始数据。
+
+六、重置系统
+  运行 stop.bat -> 删除 pgdata 目录 -> 运行 start.bat，按 data\erecords_data.sql 重建。
+
+七、常见问题
+  1) 提示数据库启动失败：查看 logs\postgres.log 与 logs\pgctl.log；
+     多为端口冲突或安全软件拦截，可将整个目录加入杀毒软件白名单。
+  2) 提示"文件名或扩展名太长"：说明解压路径过深，请把目录移到 D:\ 这类短路径。
+  3) 浏览器打不开页面：确认 start.bat 窗口显示"启动完成"，且 8080 未被占用。
+  4) 首次启动较慢：初始化数据库需写入数百个文件，属正常现象。
+  5) 关闭 start.bat 窗口不会停止服务（服务已独立运行），请用 stop.bat 正常停止，
+     避免直接关机导致数据库异常。
+
+八、与正式部署的区别
+  本便携版以 Python 内置 HTTP 反向代理（backend\scripts\preview_server.py）替代
+  Nginx，适合单机使用与演示。如需多用户正式发布到服务器，请使用 deploy 目录中的
+  Nginx 配置 + 后端 Docker 方案。
